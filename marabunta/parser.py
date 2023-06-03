@@ -5,8 +5,10 @@
 from __future__ import print_function
 
 import io
+import os
 from ruamel.yaml import YAML
 import warnings
+from string import Template
 
 from .exception import ParseError
 from .model import (
@@ -138,6 +140,7 @@ class YamlParser(object):
         :class:`MigrationBackupOption` instances."""
         options = migration.get('options', {})
         install_command = options.get('install_command')
+        install_command = Template(install_command).safe_substitute(os.environ)
         backup = options.get('backup')
         if backup:
             self.check_dict_expected_keys(
@@ -172,6 +175,7 @@ class YamlParser(object):
                 raise ParseError(u"'%s' key must be a list" %
                                  (operation_type,), YAML_EXAMPLE)
             for command in commands:
+                command = Template(command).safe_substitute(os.environ)
                 version.add_operation(
                     operation_type,
                     Operation(command),
